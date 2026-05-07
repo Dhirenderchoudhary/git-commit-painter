@@ -1,0 +1,39 @@
+{
+  "name": "git-commit-painter",
+  "version": "1.0.0",
+  "description": "A terminal utility for drawing pixel art on your GitHub contribution graph ░▒▓█",
+  "bin": {
+    "git-commit-painter": "src/cli.js"
+  },
+  "files": [
+    "src"
+  ],
+  "homepage": "https://github.com/dhirenderchoudhary/git-commit-painter",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dhirenderchoudhary/git-commit-painter.git"
+  },
+  "keywords": [
+    "git",
+    "contribution",
+    "graph",
+    "pixel-art",
+    "cli",
+    "heatmap",
+    "terminal",
+    "commit-art",
+    "painter"
+  ],
+  "author": "dhirenderchoudhary",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dhirenderchoudhary/git-commit-painter/issues"
+  },
+  "dependencies": {
+    "commander": "^2.19.0",
+    "moment": "^2.23.0",
+    "terminal-kit": "^1.26.10"
+  },
+  "logo": "https://i.imgur.com/2DrTn0Z.gif",
+  "badge": "https://img.shields.io/badge/Made%20With-Git%20Commit%20Painter-blue.svg?style=for-the-badge&logo=github"
+}

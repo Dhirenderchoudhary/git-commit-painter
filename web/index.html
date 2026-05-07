@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Commit Painter — Draw Pixel Art on Your GitHub Profile</title>
+    <meta name="description" content="Draw pixel art on your GitHub contribution graph. Connect your GitHub account and paint your profile green with custom text, patterns, and artwork.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="grain-overlay"></div>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="nav-icon">🎨</span>
+            <span class="nav-title">Git Commit Painter</span>
+        </div>
+        <div class="nav-links">
+            <a href="#canvas">Canvas</a>
+            <a href="#text-mode">Text</a>
+            <a href="#install">Install</a>
+            <a href="https://github.com/dhirenderchoudhary/git-commit-painter" target="_blank" class="nav-github">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+            <div class="hero-badge">Open Source CLI Tool</div>
+            <h1>Paint Your GitHub<br><span class="gradient-text">Contribution Graph</span></h1>
+            <p class="hero-subtitle">Draw pixel art, type text, or connect GitHub to push commits directly — all from your browser.</p>
+            <div class="hero-actions">
+                <a href="#canvas" class="btn btn-primary">Open Canvas</a>
+                <a href="#install" class="btn btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                    Install CLI
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual" id="hero-grid"></div>
+    </header>
+
+    <!-- GitHub Connection -->
+    <section class="github-section" id="github">
+        <div class="github-card">
+            <div class="github-card-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                <h3>Connect GitHub</h3>
+            </div>
+            <div class="github-card-body" id="github-state">
+                <p class="github-desc">Enter your GitHub username and repository to generate a push-ready command, or connect via GitHub to push directly.</p>
+                <div class="github-form">
+                    <div class="input-group">
+                        <label for="gh-username">GitHub Username</label>
+                        <input type="text" id="gh-username" placeholder="dhirenderchoudhary" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="input-group">
+                        <label for="gh-repo">Repository Name</label>
+                        <input type="text" id="gh-repo" placeholder="my-painted-graph" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="input-group">
+                        <label for="gh-year">Year</label>
+                        <select id="gh-year"></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="gh-multiplier">Multiplier</label>
+                        <input type="number" id="gh-multiplier" value="10" min="1" max="50">
+                    </div>
+                </div>
+                <div class="github-actions">
+                    <button class="btn btn-primary" id="generate-cmd-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                        Generate Command
+                    </button>
+                </div>
+                <div class="generated-command" id="generated-command" style="display:none;">
+                    <div class="cmd-header">Run this in your terminal:</div>
+                    <div class="cmd-block">
+                        <code id="final-cmd"></code>
+                        <button class="copy-btn" id="copy-final-cmd" title="Copy">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Canvas - Drawable Grid -->
+    <section class="canvas-section" id="canvas">
+        <div class="section-header">
+            <h2>Pixel Canvas</h2>
+            <p>Click or drag to paint cells. Choose a shade intensity and draw your art.</p>
+        </div>
+        <div class="canvas-toolbar">
+            <div class="shade-picker">
+                <span class="shade-label">Shade:</span>
+                <button class="shade-btn active" data-shade="0" title="Erase">
+                    <div class="shade-swatch shade-0"></div>
+                </button>
+                <button class="shade-btn" data-shade="1" title="Light">
+                    <div class="shade-swatch shade-1"></div>
+                </button>
+                <button class="shade-btn" data-shade="2" title="Medium">
+                    <div class="shade-swatch shade-2"></div>
+                </button>
+                <button class="shade-btn" data-shade="3" title="Dark">
+                    <div class="shade-swatch shade-3"></div>
+                </button>
+                <button class="shade-btn" data-shade="4" title="Darkest">
+                    <div class="shade-swatch shade-4"></div>
+                </button>
+            </div>
+            <div class="canvas-actions">
+                <button class="tool-btn" id="clear-canvas" title="Clear all">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+                    Clear
+                </button>
+                <button class="tool-btn" id="export-json" title="Export pattern as JSON">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export JSON
+                </button>
+                <button class="tool-btn" id="import-json" title="Import a JSON pattern">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Import JSON
+                </button>
+                <input type="file" id="import-file" accept=".json" style="display:none">
+            </div>
+        </div>
+        <div class="canvas-wrapper">
+            <div class="canvas-labels">
+                <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
+            </div>
+            <div class="canvas-grid" id="canvas-grid"></div>
+        </div>
+    </section>
+
+    <!-- Text Preview -->
+    <section class="preview-section" id="text-mode">
+        <div class="section-header">
+            <h2>Text Mode</h2>
+            <p>Type text and preview it as a contribution graph pattern.</p>
+        </div>
+        <div class="preview-controls">
+            <input type="text" id="preview-input" placeholder="Type your text..." maxlength="10" value="hello" autocomplete="off" spellcheck="false">
+            <div class="control-row">
+                <label class="toggle-label">
+                    <input type="checkbox" id="invert-toggle">
+                    <span class="toggle-switch"></span>
+                    Invert Colors
+                </label>
+                <select id="intensity-select">
+                    <option value="1">Intensity: 1x</option>
+                    <option value="2">Intensity: 2x</option>
+                    <option value="3" selected>Intensity: 3x</option>
+                    <option value="4">Intensity: 4x</option>
+                </select>
+                <button class="tool-btn" id="send-to-canvas" title="Send text to canvas">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    Send to Canvas
+                </button>
+            </div>
+        </div>
+        <div class="graph-container">
+            <div class="graph-labels">
+                <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
+            </div>
+            <div class="graph-grid" id="preview-grid"></div>
+        </div>
+        <div class="preview-command" id="preview-command">
+            <code>git-commit-painter -t "hello" --multiplier 3</code>
+            <button class="copy-btn" id="copy-cmd" title="Copy command">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+            </button>
+        </div>
+    </section>
+
+    <!-- Install -->
+    <section class="install-section" id="install">
+        <div class="section-header">
+            <h2>Installation</h2>
+            <p>One command. That's it.</p>
+        </div>
+        <div class="install-card">
+            <div class="terminal-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="terminal-title">Terminal</span>
+            </div>
+            <div class="terminal-body">
+                <div class="terminal-line">
+                    <span class="prompt">$</span>
+                    <span class="cmd">npm i -g git-commit-painter</span>
+                    <button class="copy-btn copy-install" id="copy-install" title="Copy">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="usage-section" id="usage">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Three steps to pixel art on your profile.</p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">01</div>
+                <h3>Draw or Type</h3>
+                <p>Use the pixel canvas to draw freehand art, or type text to auto-generate a pattern.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">02</div>
+                <h3>Generate Command</h3>
+                <p>Enter your GitHub username and repo, then copy the generated CLI command.</p>
+                <div class="step-code">
+                    <code>git-commit-painter -t "hello" -m 10 --push --origin &lt;url&gt;</code>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-number">03</div>
+                <h3>See Your Art</h3>
+                <p>Run the command, push to GitHub, and your contribution graph turns into pixel art.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+        <div class="section-header">
+            <h2>Features</h2>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Pixel Canvas</h3>
+                <p>Draw freehand art with 4 shade intensities</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔤</div>
+                <h3>Text Mode</h3>
+                <p>Type text and auto-generate pixel patterns</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>Custom Fonts</h3>
+                <p>retro_block, digital_segment, arcade_pixel, bold_edge</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🖼️</div>
+                <h3>JSON Export</h3>
+                <p>Export your canvas art as a reusable JSON pattern</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Custom Dates</h3>
+                <p>Choose exactly when your art appears on the graph</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Multiplier</h3>
+                <p>Scale intensity to overpower existing contributions</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>Built by <a href="https://github.com/dhirenderchoudhary" target="_blank">dhirenderchoudhary</a></p>
+        <p class="footer-sub">MIT License · <a href="https://www.npmjs.com/package/git-commit-painter" target="_blank">npm</a> · <a href="https://github.com/dhirenderchoudhary/git-commit-painter" target="_blank">GitHub</a></p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
