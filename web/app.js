@@ -234,7 +234,7 @@ function initHeroGrid() {
 }
 
 // ─── GitHub Command Generator ────────────────────────────
-function initGitHub() {
+async function initGitHub() {
     const yearSelect = document.getElementById('gh-year');
     const currentYear = new Date().getFullYear();
     for (let y = currentYear; y >= currentYear - 5; y--) {
@@ -244,44 +244,119 @@ function initGitHub() {
         yearSelect.appendChild(opt);
     }
 
-    document.getElementById('generate-cmd-btn').addEventListener('click', () => {
-        const username = document.getElementById('gh-username').value.trim();
-        const repo = document.getElementById('gh-repo').value.trim();
+    let currentUser = null;
+
+    // Check Auth State
+    try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.authenticated) {
+                currentUser = data.username;
+                document.getElementById('unauth-state').style.display = 'none';
+                document.getElementById('auth-state').style.display = 'block';
+                document.getElementById('user-avatar').src = data.avatar_url;
+                document.getElementById('user-name').textContent = data.username;
+            }
+        }
+    } catch (e) {
+        console.error('Failed to check auth state');
+    }
+
+    // Direct Push
+    const pushBtn = document.getElementById('push-direct-btn');
+    if (pushBtn) {
+        pushBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+            const repo = document.getElementById('gh-repo').value.trim();
+            const year = document.getElementById('gh-year').value;
+            const multiplier = parseInt(document.getElementById('gh-multiplier').value) || 10;
+
+            if (!repo) {
+                showToast('Please enter a target repository name.');
+                return;
+            }
+
+            // Decide which pattern to use (Canvas vs Text)
+            const hasCanvasArt = canvasData.some(week => week.some(d => d > 0));
+            let patternToPush = [];
+            
+            if (hasCanvasArt) {
+                for (let day = 0; day < ROWS; day++) {
+                    let rowStr = '';
+                    for (let week = 0; week < WEEKS; week++) {
+                        rowStr += canvasData[week][day] || '0';
+                    }
+                    patternToPush.push(rowStr);
+                }
+            } else {
+                const text = document.getElementById('preview-input').value || 'hello';
+                const invert = document.getElementById('invert-toggle').checked;
+                const grid = textToGrid(text, invert, 1); // Get normalized grid
+                // Format grid into string rows
+                for (let row = 0; row < ROWS; row++) {
+                    let rowStr = '';
+                    for (let col = 0; col < grid[row].length; col++) {
+                        rowStr += grid[row][col] || '0';
+                    }
+                    // Pad out to WEEKS if necessary or just send as is
+                    patternToPush.push(rowStr);
+                }
+            }
+
+            const originalBtnText = pushBtn.innerHTML;
+            pushBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg> Pushing...';
+            pushBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/push', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pattern: patternToPush,
+                        username: currentUser,
+                        repo: repo,
+                        startdate: `${year}-01-01`,
+                        multiplier: multiplier
+                    })
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(`Success! Pushed ${data.commits} commits to ${repo}. Check your GitHub profile!`);
+                } else {
+                    showToast(`Error: ${data.error || 'Failed to push'}`);
+                    console.error(data);
+                }
+            } catch (err) {
+                showToast('Network error during push.');
+            } finally {
+                pushBtn.innerHTML = originalBtnText;
+                pushBtn.disabled = false;
+            }
+        });
+    }
+
+    // Fallback CLI Command Generator
+    document.getElementById('copy-final-cmd')?.addEventListener('click', () => {
+        const repo = document.getElementById('gh-repo').value.trim() || 'repo';
         const year = document.getElementById('gh-year').value;
         const multiplier = document.getElementById('gh-multiplier').value;
-
-        if (!username || !repo) {
-            showToast('Please fill in username and repository name.');
-            return;
-        }
-
-        const origin = `https://github.com/${username}/${repo}.git`;
-
-        // Check if canvas has content
+        const origin = `https://github.com/${currentUser || 'username'}/${repo}.git`;
+        
         const hasCanvasArt = canvasData.some(week => week.some(d => d > 0));
-        let cmd;
-
+        let cmd = '';
         if (hasCanvasArt) {
             cmd = `git-commit-painter -f pattern.json --multiplier ${multiplier} --startdate ${year}-01-01 --push --origin ${origin}`;
         } else {
             const text = document.getElementById('preview-input').value.trim() || 'hello';
             cmd = `git-commit-painter -t "${text}" --multiplier ${multiplier} --startdate ${year}-01-01 --push --origin ${origin}`;
         }
-
-        document.getElementById('final-cmd').textContent = cmd;
-        document.getElementById('generated-command').style.display = 'block';
-
-        if (hasCanvasArt) {
-            showToast('Command generated! Export the canvas JSON first, then run the command.');
-        } else {
-            showToast('Command generated! Copy and run it in your terminal.');
-        }
-    });
-
-    document.getElementById('copy-final-cmd').addEventListener('click', () => {
-        const text = document.getElementById('final-cmd').textContent;
-        navigator.clipboard.writeText(text);
+        
+        navigator.clipboard.writeText(cmd);
         showCopied(document.getElementById('copy-final-cmd'));
+        showToast('Command copied!');
     });
 }
 

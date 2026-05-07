@@ -31,6 +31,9 @@
   },
   "dependencies": {
     "commander": "^2.19.0",
+    "cookie": "^1.1.1",
+    "isomorphic-git": "^1.37.6",
+    "memfs": "^4.57.2",
     "moment": "^2.23.0",
     "terminal-kit": "^1.26.10"
   },

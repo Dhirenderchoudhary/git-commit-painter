@@ -55,38 +55,56 @@
                 <h3>Connect GitHub</h3>
             </div>
             <div class="github-card-body" id="github-state">
-                <p class="github-desc">Enter your GitHub username and repository to generate a push-ready command, or connect via GitHub to push directly.</p>
-                <div class="github-form">
-                    <div class="input-group">
-                        <label for="gh-username">GitHub Username</label>
-                        <input type="text" id="gh-username" placeholder="dhirenderchoudhary" autocomplete="off" spellcheck="false">
-                    </div>
-                    <div class="input-group">
-                        <label for="gh-repo">Repository Name</label>
-                        <input type="text" id="gh-repo" placeholder="my-painted-graph" autocomplete="off" spellcheck="false">
-                    </div>
-                    <div class="input-group">
-                        <label for="gh-year">Year</label>
-                        <select id="gh-year"></select>
-                    </div>
-                    <div class="input-group">
-                        <label for="gh-multiplier">Multiplier</label>
-                        <input type="number" id="gh-multiplier" value="10" min="1" max="50">
+                <!-- Unauthenticated State -->
+                <div id="unauth-state">
+                    <p class="github-desc">Connect your GitHub account to push your painted contribution graph directly from the browser.</p>
+                    <div class="github-actions">
+                        <a href="/api/auth/login" class="btn btn-primary" id="login-github-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            Login with GitHub
+                        </a>
                     </div>
                 </div>
-                <div class="github-actions">
-                    <button class="btn btn-primary" id="generate-cmd-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                        Generate Command
-                    </button>
-                </div>
-                <div class="generated-command" id="generated-command" style="display:none;">
-                    <div class="cmd-header">Run this in your terminal:</div>
-                    <div class="cmd-block">
-                        <code id="final-cmd"></code>
-                        <button class="copy-btn" id="copy-final-cmd" title="Copy">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+
+                <!-- Authenticated State (Hidden by default) -->
+                <div id="auth-state" style="display: none;">
+                    <div class="user-profile">
+                        <img id="user-avatar" src="" alt="Avatar" width="32" height="32" style="border-radius: 50%;">
+                        <span id="user-name" style="font-weight: 600;"></span>
+                        <a href="/api/auth/logout" class="logout-link" style="margin-left: auto; font-size: 0.8rem; color: var(--text-muted); text-decoration: none;">Logout</a>
+                    </div>
+                    <p class="github-desc" style="margin-top: 1rem;">Select a target repository to push your art. <strong>Warning: Force push is used. Use a dedicated empty repository!</strong></p>
+                    
+                    <div class="github-form">
+                        <div class="input-group">
+                            <label for="gh-repo">Repository Name</label>
+                            <input type="text" id="gh-repo" placeholder="e.g., painted-graph" autocomplete="off" spellcheck="false">
+                        </div>
+                        <div class="input-group">
+                            <label for="gh-year">Year</label>
+                            <select id="gh-year"></select>
+                        </div>
+                        <div class="input-group">
+                            <label for="gh-multiplier">Multiplier (Intensity)</label>
+                            <input type="number" id="gh-multiplier" value="10" min="1" max="20" title="Max 20 to prevent server timeout">
+                        </div>
+                    </div>
+                    <div class="github-actions">
+                        <button class="btn btn-primary" id="push-direct-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Push Directly to GitHub
                         </button>
+                    </div>
+                    
+                    <!-- Fallback Command Generator -->
+                    <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Or generate a CLI command to run locally:</p>
+                        <div class="cmd-block">
+                            <code id="final-cmd">git-commit-painter -t "hello" ...</code>
+                            <button class="copy-btn" id="copy-final-cmd" title="Copy">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
