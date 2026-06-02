@@ -408,6 +408,19 @@ function showToast(msg) {
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
+// ─── Scroll Reveal Animations ────────────────────────────
+function initRevealAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
 // ─── Keyboard Shortcuts ──────────────────────────────────
 function initKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
@@ -628,6 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     initKeyboardShortcuts();
+    initRevealAnimations();
 
     document.getElementById('download-script-btn')?.addEventListener('click', downloadScript);
 
