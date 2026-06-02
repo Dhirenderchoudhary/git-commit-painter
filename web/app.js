@@ -237,11 +237,24 @@ function initHeroGrid() {
 async function initGitHub() {
     const yearSelect = document.getElementById('gh-year');
     const currentYear = new Date().getFullYear();
-    for (let y = currentYear; y >= currentYear - 5; y--) {
+    for (let y = currentYear + 1; y >= 2010; y--) {
         const opt = document.createElement('option');
         opt.value = y;
         opt.textContent = y;
+        if (y === currentYear) opt.selected = true;
         yearSelect.appendChild(opt);
+    }
+
+    // Populate standalone script year dropdown
+    const scriptYear = document.getElementById('script-year');
+    if (scriptYear) {
+        for (let y = currentYear + 1; y >= 2010; y--) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            if (y === currentYear) opt.selected = true;
+            scriptYear.appendChild(opt);
+        }
     }
 
     let currentUser = null;
@@ -395,6 +408,173 @@ function showToast(msg) {
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
+// ─── Keyboard Shortcuts ──────────────────────────────────
+function initKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Ignore if user is typing in an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+        const shadeMap = { ' ': 0, 'a': 1, 's': 2, 'd': 3, 'f': 4 };
+        if (e.key in shadeMap) {
+            e.preventDefault();
+            currentShade = shadeMap[e.key];
+            document.querySelectorAll('.shade-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.shade) === currentShade);
+            });
+        }
+        if (e.key === 'Escape') {
+            clearCanvas();
+            showToast('Canvas cleared');
+        }
+    });
+}
+
+// ─── Download Bash Script ────────────────────────────────
+function downloadScript(repoUrl, targetYear, mult) {
+    const repo = repoUrl || document.getElementById('gh-repo').value.trim();
+    const year = targetYear || document.getElementById('gh-year').value;
+    const multiplier = mult || parseInt(document.getElementById('gh-multiplier').value) || 10;
+
+    // Get pattern from canvas or text
+    const hasCanvasArt = canvasData.some(week => week.some(d => d > 0));
+    let gridRows = [];
+
+    if (hasCanvasArt) {
+        for (let day = 0; day < ROWS; day++) {
+            let rowStr = '';
+            for (let week = 0; week < WEEKS; week++) {
+                rowStr += canvasData[week][day] || '0';
+            }
+            gridRows.push(rowStr.replace(/0+$/, '') || '0');
+        }
+    } else {
+        const text = document.getElementById('preview-input').value || 'hello';
+        const invert = document.getElementById('invert-toggle').checked;
+        const grid = textToGrid(text, invert, 1);
+        for (let row = 0; row < ROWS; row++) {
+            let rowStr = '';
+            for (let col = 0; col < grid[row].length; col++) {
+                rowStr += grid[row][col] || '0';
+            }
+            gridRows.push(rowStr);
+        }
+    }
+
+    // Trim trailing empty columns
+    while (gridRows.length > 0 && gridRows.every(r => r.endsWith('0'))) {
+        gridRows = gridRows.map(r => r.slice(0, -1));
+    }
+
+    const maxWeeks = Math.max(...gridRows.map(r => r.length));
+    const gridStr = gridRows.map(r => `"${r}"`).join(',\n        ');
+
+    const script = `#!/bin/bash
+# GitHub Painter — Generated Script
+# Paint your contribution graph with pixel art
+# Usage: chmod +x github_painter.sh && ./github_painter.sh
+
+REPO="${repo}"
+YEAR="${year}"
+MULTIPLIER=${multiplier}
+
+if [ -z "$REPO" ]; then
+    echo "Error: No repository configured."
+    echo "Edit this script and set REPO to your GitHub repo URL."
+    echo "Example: REPO="https://github.com/username/repo.git""
+    exit 1
+fi
+
+echo "=== GitHub Painter ==="
+echo "Repository: $REPO"
+echo "Year: $YEAR"
+echo ""
+
+TEMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'gp')
+cd "$TEMP_DIR" || exit 1
+
+git init
+git config user.name "painter"
+git config user.email "painter@users.noreply.github.com"
+
+START_DATE="${YEAR}-01-01T12:00:00"
+
+paint_cell() {
+    local count=$1
+    local date_epoch=$2
+    for ((i=0; i<count; i++)); do
+        GIT_COMMITTER_DATE="$date_epoch" git commit --allow-empty --date="$date_epoch" -m "🎨" >/dev/null 2>&1
+    done
+}
+
+# Detect platform for date conversion
+EPOCH=""
+if date -j -f "%Y-%m-%dT%H:%M:%S" "$START_DATE" "+%s" >/dev/null 2>&1; then
+    EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$START_DATE" "+%s")
+elif date -d "$START_DATE" "+%s" >/dev/null 2>&1; then
+    EPOCH=$(date -d "$START_DATE" "+%s")
+else
+    echo "Error: Cannot parse dates. Unsupported platform."
+    exit 1
+fi
+
+# Snap to Sunday
+DAY_OF_WEEK=$(( (EPOCH / 86400) % 7 ))
+EPOCH=$(( EPOCH - DAY_OF_WEEK * 86400 ))
+
+# Pattern data (7 rows, one per day, Mon-Sun)
+# Values: 0=empty, 1-4=shade intensity
+DAYS=(
+    ${gridStr}
+)
+TOTAL_WEEKS=${maxWeeks}
+
+echo "Painting contribution graph..."
+TOTAL_COMMITS=0
+
+for ((week=0; week<TOTAL_WEEKS; week++)); do
+    for ((day=0; day<7; day++)); do
+        ROW="\${DAYS[$day]}"
+        if [ $week -lt \${#ROW} ]; then
+            CHAR="\${ROW:$week:1}"
+            INTENSITY=$(( CHAR * MULTIPLIER ))
+            if [ "$INTENSITY" -gt 20 ]; then INTENSITY=20; fi
+            for ((c=0; c<INTENSITY; c++)); do
+                GIT_COMMITTER_DATE="@$EPOCH" git commit --allow-empty --date="@$EPOCH" -m "🎨" >/dev/null 2>&1
+                TOTAL_COMMITS=$(( TOTAL_COMMITS + 1 ))
+            done
+        fi
+        EPOCH=$(( EPOCH + 86400 ))
+    done
+done
+
+echo "Generated $TOTAL_COMMITS commits."
+echo "Pushing to $REPO ..."
+
+git remote add origin "$REPO"
+git push --force -u origin main 2>/dev/null || git push --force -u origin master 2>/dev/null
+
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "Done! Check your GitHub profile."
+else
+    echo ""
+    echo "Push failed. Check your repository URL and permissions."
+    echo "Make sure the repo exists and you have write access."
+fi
+
+rm -rf "$TEMP_DIR"
+`;
+
+    const blob = new Blob([script], { type: 'application/x-sh' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'github_painter.sh';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Script downloaded! Run: chmod +x github_painter.sh && ./github_painter.sh');
+}
+
 // ─── Init ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initHeroGrid();
@@ -445,6 +625,21 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsText(file);
         e.target.value = '';
+    });
+
+    initKeyboardShortcuts();
+
+    document.getElementById('download-script-btn')?.addEventListener('click', downloadScript);
+
+    document.getElementById('download-script-btn-2')?.addEventListener('click', () => {
+        const url = document.getElementById('script-repo').value.trim();
+        const year = document.getElementById('script-year').value;
+        const mult = parseInt(document.getElementById('script-multiplier').value) || 10;
+        if (!url) {
+            showToast('Please enter a repository URL.');
+            return;
+        }
+        downloadScript(url, year, mult);
     });
 
     document.getElementById('send-to-canvas').addEventListener('click', () => {

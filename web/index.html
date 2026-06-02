@@ -94,6 +94,10 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                             Push Directly to GitHub
                         </button>
+                        <button class="btn btn-secondary" id="download-script-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Download Script ->
+                        </button>
                     </div>
                     
                     <!-- Fallback Command Generator -->
@@ -137,6 +141,9 @@
                 </button>
             </div>
             <div class="canvas-actions">
+                <span class="shortcuts-hint">
+                    <kbd>Esc</kbd> clear · <kbd>Space</kbd> erase · <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd> shades
+                </span>
                 <button class="tool-btn" id="clear-canvas" title="Clear all">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
                     Clear
@@ -197,6 +204,18 @@
             <button class="copy-btn" id="copy-cmd" title="Copy command">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
             </button>
+        </div>
+        <div class="preview-download">
+            <p class="download-desc">Don't have Node.js? Download a standalone bash script instead.</p>
+            <div class="download-inputs">
+                <input type="text" id="script-repo" placeholder="https://github.com/username/repo.git" autocomplete="off" spellcheck="false">
+                <select id="script-year"></select>
+                <input type="number" id="script-multiplier" value="10" min="1" max="20">
+                <button class="btn btn-secondary" id="download-script-btn-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Download Script ->
+                </button>
+            </div>
         </div>
     </section>
 
